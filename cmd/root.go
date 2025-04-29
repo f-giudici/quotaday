@@ -56,13 +56,11 @@ func Execute() {
 }
 
 func serveHTTP(w http.ResponseWriter, r *http.Request) {
-	remoteAdd := r.Header.Get("X-Forwarded-For")
-	if remoteAdd == "" {
-		remoteAdd = r.RemoteAddr
-	} else {
-		remoteAdd = fmt.Sprintf("%s (via %s)", remoteAdd, r.RemoteAddr)
+	log.Println(getRemoteHostInfo(r))
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
-	log.Printf("query from: %s\n", remoteAdd)
 
 	qb := quote.New()
 	qb.FillExample()
@@ -70,4 +68,36 @@ func serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := q.WriteHTML(w); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getRemoteHostInfo(r *http.Request) string {
+	// Sample Headers:
+	// Accept:[*/*]
+	// Accept-Encoding:[gzip, br]
+	// Cdn-Loop:[cloudflare; loops=1]
+	// Cf-Connecting-Ip:[1.2.3.4]
+	// Cf-Ipcountry:[IT]
+	// Cf-Ray:[93804dd5edd859f5-MXP]
+	// Cf-Visitor:[{"scheme":"https"}]
+	// User-Agent:[curl/7.88.1]
+	// X-Forwarded-For:[2.3.4.5]
+	// X-Forwarded-Host:[quote.example.com]
+	// X-Forwarded-Port:[80]
+	// X-Forwarded-Proto:[http]
+	// X-Forwarded-Server:[traefik-32bfd46sce-74c3h]
+	// X-Real-Ip:[2.3.4.5]]
+
+	remoteAddr := r.RemoteAddr
+	userAgent := r.Header.Get("User-Agent")
+
+	// Proxied through Cloudflare?
+	if remote := r.Header.Get("Cf-Connecting-Ip"); remote != "" {
+		remoteAddr = fmt.Sprintf("%s (%s)", remote, r.Header.Get("Cf-Ipcountry"))
+	} else if remote := r.Header.Get("X-Real-Ip"); remote != "" {
+		remoteAddr = remote
+	} else if remote := r.Header.Get("X-Forwarded-For"); remote != "" {
+		remoteAddr = remote
+	}
+
+	return fmt.Sprintf("%s %q - %s %s %q", remoteAddr, userAgent, r.Method, r.Proto, r.URL.String())
 }
