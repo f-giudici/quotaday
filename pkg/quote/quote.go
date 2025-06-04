@@ -51,8 +51,8 @@ func (q *QuoteBook) FillExample() {
 		{"Start before you are ready. Don't prepare, begin.", "Mel Robbins"},
 		{"Eat the frog first.", "Brian Tracy"},
 		{"Imperfect action beats perfect inaction.", "Harry S. Truman"},
-		{"Succed or survive (but try).", "Mel Robbins"},
-		{"Be responsible for telling peple the truth, not managing people's reactions to it.", "Mel Robbins"},
+		{"Succeed or survive (but try).", "Mel Robbins"},
+		{"Be responsible for telling people the truth, not managing people's reactions to it.", "Mel Robbins"},
 		{"Today's favor is tomorrow's expectation.", "Mel Robbins"},
 	}
 }
