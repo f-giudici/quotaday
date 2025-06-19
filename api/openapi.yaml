@@ -1,0 +1,70 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Quotaday
+  description: An API to access quotes
+paths:
+  /quotes:
+    get:
+      description: Returns a list of quotes
+      parameters:
+        - name: limit
+          in: query
+          description: Limits the number of items on a page
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Specifies the page number of the artists to be displayed
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully returned a list of quotes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        '400':
+          $ref: '#/components/responses/400Error'
+    post:
+      description: Lets a user post a new quote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quote'
+      responses:
+        '200':
+          description: Successfully created a new quote
+          content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/Quote'
+        '400':
+          $ref: '#/components/responses/400Error'
+components:
+  schemas:
+    Quote:
+      type: object
+      required:
+      - quote
+      properties:
+        author:
+          type: string
+          example: "Mel Robbins"
+        quote:
+          type: string
+          example: "Start before you are ready. Don't prepare, begin."
+  responses:
+    400Error:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request"
