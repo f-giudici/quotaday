@@ -9,6 +9,9 @@ LDFLAGS:=-w -s
 LDFLAGS+=-X "$(GO_MODULE)/cmd.version=$(GIT_TAG)"
 LDFLAGS+=-X "$(GO_MODULE)/cmd.gitCommit=$(GIT_COMMIT)"
 
+generate:
+	go generate ./...
+
 quotaday:
 	CGO_ENABLED=0 go build -ldflags '$(LDFLAGS)' -o quotaday main.go
 
