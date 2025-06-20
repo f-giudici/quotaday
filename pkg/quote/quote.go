@@ -17,6 +17,7 @@ limitations under the License.
 package quote
 
 import (
+	"encoding/json"
 	"html/template"
 	"io"
 	"math/rand"
@@ -57,6 +58,10 @@ func (q *QuoteBook) FillExample() {
 	}
 }
 
+func (q *QuoteBook) AddQuote(quote *Quotation) {
+	q.quoteList = append(q.quoteList, *quote)
+}
+
 func (q *Quotation) WriteHTML(w io.Writer) error {
 	const tpl = `
 <!DOCTYPE html>
@@ -75,4 +80,8 @@ func (q *Quotation) WriteHTML(w io.Writer) error {
 	}
 	tmpl.Execute(w, q)
 	return nil
+}
+
+func (q *Quotation) WriteJSON(w io.Writer) error {
+	return json.NewEncoder(w).Encode(q)
 }
