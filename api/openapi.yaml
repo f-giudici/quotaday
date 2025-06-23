@@ -4,29 +4,28 @@ info:
   title: Quotaday
   description: An API to access quotes
 paths:
-  /quotes:
+  /quote:
     get:
-      description: Returns a list of quotes
+      description: Returns a quotation
       parameters:
-        - name: limit
+        - name: id
           in: query
-          description: Limits the number of items on a page
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          description: Specifies the page number of the artists to be displayed
+          description: Identifies the i-th quotation to return
           schema:
             type: integer
       responses:
         '200':
-          description: Successfully returned a list of quotes
+          description: Successfully returned a quotation
           content:
+            text/html:
+              schema:
+                type: string
+                example: "Start before you are ready. Don't prepare, begin.\nMel Robbins"
             application/json:
               schema:
                 $ref: '#/components/schemas/Quote'
         '400':
-          $ref: '#/components/responses/400Error'
+          $ref: '#/components/responses/Error'
     post:
       description: Lets a user post a new quote
       requestBody:
@@ -42,8 +41,8 @@ paths:
             application/json:
              schema:
                $ref: '#/components/schemas/Quote'
-        '400':
-          $ref: '#/components/responses/400Error'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   schemas:
     Quote:
@@ -58,13 +57,19 @@ components:
           type: string
           example: "Start before you are ready. Don't prepare, begin."
   responses:
-    400Error:
-      description: Invalid request
+    Error:
+      description: Error
       content:
         application/json:
           schema:
             type: object
             properties:
+              code:
+                type: string
+                example: "400"
               message:
                 type: string
                 example: "Bad Request"
+            required:
+              - code
+              - message
