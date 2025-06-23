@@ -18,31 +18,29 @@ type Quote struct {
 	Quote  string  `json:"quote"`
 }
 
-// N400Error defines model for 400Error.
-type N400Error struct {
-	Message *string `json:"message,omitempty"`
+// Error defines model for Error.
+type Error struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
-// GetQuotesParams defines parameters for GetQuotes.
-type GetQuotesParams struct {
-	// Limit Limits the number of items on a page
-	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// Offset Specifies the page number of the artists to be displayed
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+// GetQuoteParams defines parameters for GetQuote.
+type GetQuoteParams struct {
+	// Id Identifies the i-th quotation to return
+	Id *int `form:"id,omitempty" json:"id,omitempty"`
 }
 
-// PostQuotesJSONRequestBody defines body for PostQuotes for application/json ContentType.
-type PostQuotesJSONRequestBody = Quote
+// PostQuoteJSONRequestBody defines body for PostQuote for application/json ContentType.
+type PostQuoteJSONRequestBody = Quote
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /quotes)
-	GetQuotes(w http.ResponseWriter, r *http.Request, params GetQuotesParams)
+	// (GET /quote)
+	GetQuote(w http.ResponseWriter, r *http.Request, params GetQuoteParams)
 
-	// (POST /quotes)
-	PostQuotes(w http.ResponseWriter, r *http.Request)
+	// (POST /quote)
+	PostQuote(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -54,32 +52,24 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetQuotes operation middleware
-func (siw *ServerInterfaceWrapper) GetQuotes(w http.ResponseWriter, r *http.Request) {
+// GetQuote operation middleware
+func (siw *ServerInterfaceWrapper) GetQuote(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetQuotesParams
+	var params GetQuoteParams
 
-	// ------------- Optional query parameter "limit" -------------
+	// ------------- Optional query parameter "id" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	err = runtime.BindQueryParameter("form", true, false, "id", r.URL.Query(), &params.Id)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "offset" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetQuotes(w, r, params)
+		siw.Handler.GetQuote(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -89,11 +79,11 @@ func (siw *ServerInterfaceWrapper) GetQuotes(w http.ResponseWriter, r *http.Requ
 	handler.ServeHTTP(w, r)
 }
 
-// PostQuotes operation middleware
-func (siw *ServerInterfaceWrapper) PostQuotes(w http.ResponseWriter, r *http.Request) {
+// PostQuote operation middleware
+func (siw *ServerInterfaceWrapper) PostQuote(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostQuotes(w, r)
+		siw.Handler.PostQuote(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -223,8 +213,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	m.HandleFunc("GET "+options.BaseURL+"/quotes", wrapper.GetQuotes)
-	m.HandleFunc("POST "+options.BaseURL+"/quotes", wrapper.PostQuotes)
+	m.HandleFunc("GET "+options.BaseURL+"/quote", wrapper.GetQuote)
+	m.HandleFunc("POST "+options.BaseURL+"/quote", wrapper.PostQuote)
 
 	return m
 }
