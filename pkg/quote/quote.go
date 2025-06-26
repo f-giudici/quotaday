@@ -21,6 +21,7 @@ import (
 	"html/template"
 	"io"
 	"math/rand"
+	"sync"
 )
 
 // Quotation contains the data of a single quote
@@ -32,6 +33,7 @@ type Quotation struct {
 // QuoteBook is a collection of Quotations
 type QuoteBook struct {
 	quoteList []Quotation
+	sync.Mutex
 }
 
 func New() *QuoteBook {
@@ -39,6 +41,8 @@ func New() *QuoteBook {
 }
 
 func (q *QuoteBook) RandomQuotation() Quotation {
+	q.Lock()
+	defer q.Unlock()
 	if len(q.quoteList) == 0 {
 		return Quotation{}
 	}
@@ -58,8 +62,10 @@ func (q *QuoteBook) FillExample() {
 	}
 }
 
-func (q *QuoteBook) AddQuote(quote *Quotation) {
-	q.quoteList = append(q.quoteList, *quote)
+func (q *QuoteBook) AddQuote(quote Quotation) {
+	q.Lock()
+	defer q.Unlock()
+	q.quoteList = append(q.quoteList, quote)
 }
 
 func (q *Quotation) WriteHTML(w io.Writer) error {
