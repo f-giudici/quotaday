@@ -15,8 +15,8 @@ ARG VERSION=v0.0.0
 ARG COMMIT=""
 RUN go build \
     -ldflags "-w -s \
-    -X github.com/f-giudici/quotaday/cmd.version=${VERSION} \
-    -X github.com/f-giudici/quotaday/cmd.gitCommit=${COMMIT}" \
+    -X github.com/fgday/quotaday/cmd.version=${VERSION} \
+    -X github.com/fgday/quotaday/cmd.gitCommit=${COMMIT}" \
     -o /quotaday
 
 

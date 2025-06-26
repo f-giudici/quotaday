@@ -1,4 +1,4 @@
-module github.com/f-giudici/quotaday
+module github.com/fgday/quotaday
 
 go 1.24.1
 

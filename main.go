@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/f-giudici/quotaday/cmd"
+	"github.com/fgday/quotaday/cmd"
 )
 
 func main() {

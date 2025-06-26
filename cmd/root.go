@@ -24,7 +24,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/f-giudici/quotaday/api"
+	"github.com/fgday/quotaday/api"
 )
 
 func Execute() {

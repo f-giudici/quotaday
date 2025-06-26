@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/f-giudici/quotaday/pkg/quote"
+	"github.com/fgday/quotaday/pkg/quote"
 )
 
 type Server struct {
