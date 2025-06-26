@@ -3,9 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/f-giudici/quotaday/pkg/quote"
 )
@@ -23,42 +23,58 @@ func NewServer() *Server {
 	return &server
 }
 
-// GET quotes
-func (s *Server) GetQuotes(w http.ResponseWriter, r *http.Request, params GetQuotesParams) {
+// GET quote serves a quotation from the available ones
+func (s *Server) GetQuote(w http.ResponseWriter, r *http.Request, params GetQuoteParams) {
 	log.Println(getRemoteHostInfo(r))
 
 	q := s.RandomQuotation()
+	//mimeTypes := r.Header.Values("Accept")
+	mimeTypes := r.Header.Values("Accept")
+
+	for _, mt := range mimeTypes {
+		for _, val := range strings.Split(mt, ",") {
+			var err error
+			switch val {
+			case "text/html":
+				w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+				err = q.WriteHTML(w)
+			case "application/json", "*/*":
+				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+				err = q.WriteJSON(w)
+			default:
+				log.Printf("Skipping MIME type %q", val)
+				continue
+			}
+
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("Serving MIME type %q", val)
+			return
+		}
+	}
+
+	// Default
+	log.Print("No \"Accept\" header found")
 	if err := q.WriteJSON(w); err != nil {
 		log.Fatal(err)
 	}
 }
 
-// POST quotes
-func (s *Server) PostQuotes(w http.ResponseWriter, r *http.Request) {
-	log.Println(getRemoteHostInfo(r))
+// POST quote adds a quote to the available ones
+func (s *Server) PostQuote(w http.ResponseWriter, r *http.Request) {
+	log.Print(getRemoteHostInfo(r))
 
-	body, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
+	var newQuote quote.Quotation
+	if err := json.NewDecoder(r.Body).Decode(&newQuote); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte("could not read request body"))
 		return
 	}
 
-	q := quote.Quotation{}
-	err = json.Unmarshal(body, &q)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("invalid quote format"))
-		return
-	}
-
-	s.AddQuote(&q)
+	s.AddQuote(newQuote)
 	w.WriteHeader(http.StatusCreated)
-	if err := q.WriteJSON(w); err != nil {
-		log.Print("error writing quotation")
-		return
-	}
+	_ = newQuote.WriteJSON(w)
 }
 
 func getRemoteHostInfo(r *http.Request) string {
