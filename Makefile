@@ -9,12 +9,19 @@ LDFLAGS:=-w -s
 LDFLAGS+=-X "$(GO_MODULE)/cmd.version=$(GIT_TAG)"
 LDFLAGS+=-X "$(GO_MODULE)/cmd.gitCommit=$(GIT_COMMIT)"
 
+.PHONY: clean
+clean:
+	rm -rf quotaday
+
+.PHONY: generate
 generate:
 	go generate ./...
 
+.PHONY: quotaday
 quotaday:
 	CGO_ENABLED=0 go build -ldflags '$(LDFLAGS)' -o quotaday main.go
 
+.PHONY: docker
 docker:
 	DOCKER_BUILDKIT=1 docker build \
 			-f Dockerfile \
