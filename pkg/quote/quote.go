@@ -105,8 +105,7 @@ func (q *Quotation) WriteHTML(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	tmpl.Execute(w, q)
-	return nil
+	return tmpl.Execute(w, q)
 }
 
 func (q *Quotation) WriteJSON(w io.Writer) error {

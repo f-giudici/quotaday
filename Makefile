@@ -28,3 +28,7 @@ docker:
 			--build-arg VERSION=${GIT_TAG} \
 			--build-arg COMMIT=${GIT_COMMIT_SHORT} \
 			-t ${DOCKERIMG}:${DOCKERTAG}
+
+.PHONY: tests
+tests:
+	go test ./...
