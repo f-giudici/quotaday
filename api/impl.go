@@ -67,13 +67,21 @@ func (s *Server) PostQuote(w http.ResponseWriter, r *http.Request) {
 
 	var newQuote quote.Quotation
 	if err := json.NewDecoder(r.Body).Decode(&newQuote); err != nil {
+		log.Printf("json decode failed: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte("could not read request body"))
 		return
 	}
 
-	s.AddQuote(newQuote)
+	if err := s.AddQuote(newQuote); err != nil {
+		log.Printf("QuoteBook Add failed: %s", err)
+		w.WriteHeader(http.StatusInsufficientStorage)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
+	log.Printf("Quote added:\n%q\n%q", newQuote.Quote, newQuote.Author)
 	_ = newQuote.WriteJSON(w)
 }
 

@@ -18,6 +18,7 @@ package quote
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"math/rand"
@@ -29,6 +30,8 @@ type Quotation struct {
 	Quote  string
 	Author string
 }
+
+const maxQuotes = 20
 
 // QuoteBook is a collection of Quotations
 type QuoteBook struct {
@@ -62,10 +65,14 @@ func (q *QuoteBook) FillExample() {
 	}
 }
 
-func (q *QuoteBook) AddQuote(quote Quotation) {
+func (q *QuoteBook) AddQuote(quote Quotation) error {
 	q.Lock()
 	defer q.Unlock()
+	if len(q.quoteList) > maxQuotes {
+		return fmt.Errorf("QuoteBook is full")
+	}
 	q.quoteList = append(q.quoteList, quote)
+	return nil
 }
 
 func (q *Quotation) WriteHTML(w io.Writer) error {
