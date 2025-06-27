@@ -11,15 +11,15 @@ import (
 )
 
 type Server struct {
-	*quote.QuoteBook
+	qb *quote.QuoteBook
 }
 
 var _ ServerInterface = (*Server)(nil)
 
 func NewServer() *Server {
 	server := Server{}
-	server.QuoteBook = quote.New()
-	server.FillExample()
+	server.qb = quote.New()
+	server.qb.FillExample()
 	return &server
 }
 
@@ -27,7 +27,19 @@ func NewServer() *Server {
 func (s *Server) GetQuote(w http.ResponseWriter, r *http.Request, params GetQuoteParams) {
 	log.Println(getRemoteHostInfo(r))
 
-	q := s.RandomQuotation()
+	var q *quote.Quotation
+	var err error
+	if params.Id == nil {
+		q, err = s.qb.RandomQuotation()
+	} else {
+		q, err = s.qb.GetQuote(*params.Id)
+	}
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(err.Error()))
+	}
+
 	//mimeTypes := r.Header.Values("Accept")
 	mimeTypes := r.Header.Values("Accept")
 
@@ -73,7 +85,7 @@ func (s *Server) PostQuote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.AddQuote(newQuote); err != nil {
+	if err := s.qb.AddQuote(newQuote); err != nil {
 		log.Printf("QuoteBook Add failed: %s", err)
 		w.WriteHeader(http.StatusInsufficientStorage)
 		_, _ = w.Write([]byte(err.Error()))
