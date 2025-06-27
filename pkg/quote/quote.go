@@ -43,15 +43,16 @@ func New() *QuoteBook {
 	return new(QuoteBook)
 }
 
-func (q *QuoteBook) RandomQuotation() Quotation {
+func (q *QuoteBook) RandomQuotation() (*Quotation, error) {
 	q.Lock()
 	defer q.Unlock()
 	if len(q.quoteList) == 0 {
-		return Quotation{}
+		return nil, fmt.Errorf("empty QuoteBook")
 	}
 
 	idx := rand.Intn(len(q.quoteList))
-	return q.quoteList[idx]
+	quote := q.quoteList[idx]
+	return &quote, nil
 }
 
 func (q *QuoteBook) FillExample() {
@@ -73,6 +74,19 @@ func (q *QuoteBook) AddQuote(quote Quotation) error {
 	}
 	q.quoteList = append(q.quoteList, quote)
 	return nil
+}
+
+func (q *QuoteBook) GetQuote(num int) (*Quotation, error) {
+	q.Lock()
+	defer q.Unlock()
+	if len(q.quoteList) == 0 {
+		return nil, fmt.Errorf("empty QuoteBook")
+	}
+	if num >= len(q.quoteList) {
+		return nil, fmt.Errorf("id %d out of bounds", num)
+	}
+	quote := q.quoteList[num]
+	return &quote, nil
 }
 
 func (q *Quotation) WriteHTML(w io.Writer) error {
