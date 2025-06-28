@@ -11,7 +11,7 @@ LDFLAGS+=-X "$(GO_MODULE)/cmd.gitCommit=$(GIT_COMMIT)"
 
 .PHONY: clean
 clean:
-	rm -rf quotaday
+	rm -rf quotaday output.cov
 
 .PHONY: generate
 generate:
@@ -31,4 +31,4 @@ docker:
 
 .PHONY: tests
 tests:
-	go test ./...
+	go test -coverprofile=output.cov ./...
