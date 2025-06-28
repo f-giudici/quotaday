@@ -9,6 +9,7 @@ ADD main.go .
 ADD Makefile .
 ADD cmd cmd
 ADD pkg pkg
+ADD api api
 COPY main.go /app/main.go
 
 ARG VERSION=v0.0.0
