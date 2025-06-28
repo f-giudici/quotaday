@@ -40,8 +40,11 @@ func (s *Server) GetQuote(w http.ResponseWriter, r *http.Request, params GetQuot
 		_, _ = w.Write([]byte(err.Error()))
 	}
 
-	//mimeTypes := r.Header.Values("Accept")
 	mimeTypes := r.Header.Values("Accept")
+	// if "Accept" header is not present  just assume any  MIME type is fine
+	if len(mimeTypes) == 0 {
+		mimeTypes = []string{"*/*"}
+	}
 
 	for _, mt := range mimeTypes {
 		for _, val := range strings.Split(mt, ",") {
@@ -59,7 +62,8 @@ func (s *Server) GetQuote(w http.ResponseWriter, r *http.Request, params GetQuot
 			}
 
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("error writing quote: %s", err)
+				return
 			}
 			log.Printf("Serving MIME type %q", val)
 			return
@@ -67,10 +71,8 @@ func (s *Server) GetQuote(w http.ResponseWriter, r *http.Request, params GetQuot
 	}
 
 	// Default
-	log.Print("No \"Accept\" header found")
-	if err := q.WriteJSON(w); err != nil {
-		log.Fatal(err)
-	}
+	log.Print("No acceptable MIME type found in the \"Accept\" header")
+	w.WriteHeader(http.StatusNotAcceptable)
 }
 
 // POST quote adds a quote to the available ones
